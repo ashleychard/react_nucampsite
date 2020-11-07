@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
-import { baseUrl } from '../shared/baseUrl'; 
-import { 
-    Card, 
-    CardImg, 
-    CardText, 
-    CardBody, 
-    Breadcrumb, 
-    BreadcrumbItem, 
-    Button, 
-    Modal, 
-    ModalHeader, 
-    ModalBody, 
-    Label } from 'reactstrap';
+import { baseUrl } from '../shared/baseUrl';
+import {
+    Card,
+    CardImg,
+    CardText,
+    CardBody,
+    Breadcrumb,
+    BreadcrumbItem,
+    Button,
+    Modal,
+    ModalHeader,
+    ModalBody,
+    Label
+} from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { Control, LocalForm, Errors } from 'react-redux-form';
 import { Loading } from './LoadingComponent';
+import { FadeTransform, Fade, Stagger } from 'react-animation-components';
 
 const maxLength = (len) => (val) => !val || (val.length <= len);
 const minLength = (len) => (val) => val && (val.length >= len);
@@ -22,12 +24,18 @@ const minLength = (len) => (val) => val && (val.length >= len);
 function RenderCampsite({ campsite }) {
     return (
         <div className="col-md-5 m-1">
-            <Card>
-                <CardImg top src={baseUrl + campsite.image} alt={campsite.name} />
-                <CardBody>
-                    <CardText>{campsite.description}</CardText>
-                </CardBody>
-            </Card>
+            <FadeTransform
+                in
+                transformProps={{
+                    exitTransform: 'scale(0.5) translateY(-50%)'
+                }}>
+                <Card>
+                    <CardImg top src={baseUrl + campsite.image} alt={campsite.name} />
+                    <CardBody>
+                        <CardText>{campsite.description}</CardText>
+                    </CardBody>
+                </Card>
+            </FadeTransform>
         </div>
     );
 }
@@ -48,11 +56,11 @@ class CommentForm extends Component {
         });
     }
 
-    handleSubmit(values){
+    handleSubmit(values) {
         this.toggleModal();
         this.props.postComment(this.props.campsiteId, values.rating, values.author, values.text);
     }
-    
+
     render() {
         return (
             <div>
@@ -62,7 +70,7 @@ class CommentForm extends Component {
                 <Modal isOpen={this.state.isModalOpen} toggle={this.toggleModal}>
                     <ModalHeader toggle={this.toggleModal}>Submit Comment</ModalHeader>
                     <ModalBody>
-                        <LocalForm onSubmit={(values)=> this.handleSubmit(values)}>
+                        <LocalForm onSubmit={(values) => this.handleSubmit(values)}>
                             <div className="form-group">
                                 <Label htmlFor="rating">Rating</Label>
                                 <Control.select
@@ -126,19 +134,23 @@ function RenderComments({ comments, postComment, campsiteID }) {
         return (
             <div className="col-md-5 m-1">
                 <h4>Comments</h4>
-                {
-                    comments.map((comment) => {
-                        return (
-                            <div key={comment.id}>
-                                <p>
-                                    {comment.text}
-                                    <br></br>
-                                    -- {comment.author}, {" "} {new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(Date.parse(comment.date)))}
-                                </p>
-                            </div>
-                        );
-                    })}
-                <CommentForm campsiteID={campsiteID} postComment={postComment}/>
+                <Stagger in>
+                    {
+                        comments.map(comment => {
+                            return (
+                                <Fade in key={comment.id}>
+                                    <div>
+                                        <p>
+                                            {comment.text}<br />
+                                            -- {comment.author}, {new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(Date.parse(comment.date)))}
+                                        </p>
+                                    </div>
+                                </Fade>
+                            );
+                        })
+                    }
+                </Stagger>
+                <CommentForm campsiteID={campsiteID} postComment={postComment} />
             </div>
         );
     }
@@ -146,8 +158,8 @@ function RenderComments({ comments, postComment, campsiteID }) {
 }
 
 function CampsiteInfo(props) {
-    if(props.isLoading){
-        return( 
+    if (props.isLoading) {
+        return (
             <div className="container">
                 <div className="row">
                     <Loading />
@@ -181,10 +193,10 @@ function CampsiteInfo(props) {
                 </div>
                 <div className="row">
                     < RenderCampsite campsite={props.campsite} />
-                    < RenderComments 
-                    comments={props.comments} 
-                    postComment={props.postComment}
-                    campsiteID={props.campsite.id}
+                    < RenderComments
+                        comments={props.comments}
+                        postComment={props.postComment}
+                        campsiteID={props.campsite.id}
                     />
                 </div>
             </div>
